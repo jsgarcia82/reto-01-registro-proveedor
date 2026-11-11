@@ -174,6 +174,9 @@ export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstanc
 
 async function main(): Promise<void> {
   const directory = join(dirname(fileURLToPath(import.meta.url)), "..")
+  // .env local opcional (nunca versionado). Las variables ya definidas en el entorno tienen prioridad.
+  const envFile = join(directory, ".env")
+  if (existsSync(envFile)) process.loadEnvFile(envFile)
   const config = loadConfig()
   const problemas = await verificarChecksums(join(directory, "fixtures"))
   if (problemas.length) throw new Error(`Fixtures alterados: ${problemas.join(", ")}`)

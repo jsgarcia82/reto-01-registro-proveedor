@@ -32,7 +32,7 @@ Con Docker (Postgres 16 real), un comando:
 docker compose up --build        # http://localhost:3000
 ```
 
-Con el modelo real: copia `.env.example` a `.env` y define `ANTHROPIC_API_KEY` (y opcionalmente `ANTHROPIC_MODEL`). La clave solo vive en el entorno del backend.
+Con el modelo real: copia `.env.example` a `.env` y define `ANTHROPIC_API_KEY` (y opcionalmente `ANTHROPIC_MODEL`); `npm run dev` lo lee al arrancar (las variables del entorno tienen prioridad). La clave solo vive en el entorno del backend.
 
 ### Prompt de demostración (PRD §11)
 
