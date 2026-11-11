@@ -1,4 +1,5 @@
 import cookie from "@fastify/cookie"
+import rateLimit from "@fastify/rate-limit"
 import fastifyStatic from "@fastify/static"
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify"
 import { existsSync } from "node:fs"
@@ -61,6 +62,8 @@ export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstanc
 
   const app = Fastify({ logger: o.logger ?? false, bodyLimit: 64 * 1024 })
   await app.register(cookie)
+  // Límite de tasa por IP (protege la clave del LLM y el login frente a fuerza bruta).
+  await app.register(rateLimit, { global: true, max: 120, timeWindow: "1 minute" })
   app.decorateRequest("usuario", null)
 
   app.setErrorHandler((err, _req, reply) => {
@@ -85,7 +88,7 @@ export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstanc
 
   app.get("/api/health", async () => ({ ok: true, provider: llm.provider, model: llm.model }))
 
-  app.post("/api/login", async (req, reply) => {
+  app.post("/api/login", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }, async (req, reply) => {
     const b = LoginBody.safeParse(req.body)
     if (!b.success) return reply.code(400).send({ ok: false, error: "Correo o clave con formato inválido." })
     const u = await autenticar(o.db, b.data.email, b.data.password)

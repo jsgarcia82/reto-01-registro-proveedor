@@ -153,3 +153,16 @@ describe("Ciclo del agente — topes y errores del proveedor (CA1, CA5)", () => 
     await app.close()
   })
 })
+
+describe("Seguridad — límite de intentos de login", () => {
+  it("más de 10 intentos por minuto desde la misma IP → 429", async () => {
+    const e = await entorno()
+    const { app } = await construirApp({ directory: ROOT, config: loadConfig({ LLM_PROVIDER: "mock" }), db: e.db, clock: e.clock, paths: { fixtures: FIXTURES, out: e.paths.out } })
+    const codes: number[] = []
+    for (let i = 0; i < 12; i++) codes.push((await app.inject({ method: "POST", url: "/api/login", payload: { email: "x@y.zz", password: "mala" } })).statusCode)
+    expect(codes.slice(0, 10).every((c) => c === 401)).toBe(true)
+    expect(codes.at(-1)).toBe(429)
+    await app.close()
+    await e.limpiar()
+  })
+})
