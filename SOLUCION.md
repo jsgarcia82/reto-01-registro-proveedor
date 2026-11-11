@@ -97,7 +97,7 @@ Un cambio de reglas de negocio toca `src/domain` o `src/knowledge`, nunca `serve
 | HU-4 Paquete y confirmación | Hecho | `anti_error_1_1/1_2`, e2e | Firma electrónica; envío real por correo |
 | HU-5 Errores | Hecho | `funcional.test.ts`, e2e | Observabilidad (métricas y trazas) |
 | Front con herramientas visibles y confirmación resaltada | Hecho | `web/` | Streaming; accesibilidad revisada |
-| Link público | **Pendiente** | `render.yaml` | Desplegar con la cuenta del candidato |
+| Link público | Hecho | https://reto01-registro-proveedor-jwpo.onrender.com (Render, `render.yaml`) | Instancia de pago para evitar el arranque en frío y disco persistente u object storage para `out/` |
 | Bonus `modulo/` | Hecho | `tests/modulo.test.ts` (mismas piezas, sin divergencia) | Publicar como paquete npm versionado |
 
 ## 9. Uso de IA

@@ -8,7 +8,7 @@ Agente en TypeScript que lee la solicitud del cliente, cruza los campos con el r
 
 | | |
 |---|---|
-| **Link de prueba** | _pendiente de despliegue (ver "Despliegue")_ |
+| **Link de prueba** | **https://reto01-registro-proveedor-jwpo.onrender.com** (Render Free: si estuvo inactivo 15 min, la primera carga tarda ~1 min) |
 | **Acceso al link** | Usuario y clave se entregan en la defensa (variable `DEMO_USERS` del servidor; no se publican en el repo). |
 | **Pruebas** | `npm test`: 61 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
 | **CI** | GitHub Actions: PGlite (sin Docker ni clave) + Postgres 16 real |
@@ -132,7 +132,6 @@ Principios tomados de los materiales de referencia: *Gobernanza y Compliance de 
 
 ## Lo no cubierto
 
-- Despliegue público: requiere la cuenta de quien entrega (`render.yaml` listo; ver abajo).
 - Streaming de respuestas (opcional en el PRD).
 - PDF de cliente sin AcroForm (se rellenaría por coordenadas); hoy se exige AcroForm o se deriva la plantilla.
 
@@ -148,7 +147,9 @@ Se regenera con `npx tsx scripts/build-modulo.ts`; `tests/modulo.test.ts` falla 
 
 ## Despliegue
 
-`render.yaml` (Blueprint): servicio Docker + Postgres gestionado. En Render: *New → Blueprint → este repo*; cargar `ANTHROPIC_API_KEY` y `DEMO_USERS` en el panel (no en el repo).
+Desplegado en **https://reto01-registro-proveedor-jwpo.onrender.com** con `render.yaml` (Blueprint): servicio Docker + Postgres gestionado; `ANTHROPIC_API_KEY` y `DEMO_USERS` se cargan en el panel de Render (no en el repo). Cada push a `main` redespliega.
+
+En el plan Free el disco es efímero: al dormirse el servicio se borra `out/` (la BD se conserva); el agente lo detecta y pide reprocesar el caso antes de enviar.
 
 ## Estructura
 
