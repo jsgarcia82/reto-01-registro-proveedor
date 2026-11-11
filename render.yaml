@@ -1,0 +1,25 @@
+# Blueprint de Render: New → Blueprint → este repositorio. Las claves se cargan en el panel (sync: false), nunca en el repo.
+services:
+  - type: web
+    name: reto01-registro-proveedor
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reto01-db
+          property: connectionString
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
+      - key: DEMO_USERS
+        sync: false
+      - key: MAX_TOKENS_PER_SESSION
+        value: "200000"
+databases:
+  - name: reto01-db
+    plan: free
