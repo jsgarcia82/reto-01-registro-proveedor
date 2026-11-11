@@ -1,0 +1,40 @@
+{
+  "name": "reto-01-registro-proveedor",
+  "version": "1.0.0",
+  "description": "Agente conversacional Registro como Proveedor (Reto 01 Periferia IT)",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "start": "tsx src/server.ts",
+    "demo": "tsx demo.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "fixtures:verify": "tsx scripts/verify-fixtures.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@electric-sql/pglite": "^0.5.16",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/static": "^10.1.10",
+    "exceljs": "^4.4.0",
+    "fastify": "^5.12.8",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.23.1",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
