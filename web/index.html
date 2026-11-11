@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agente · Registro como Proveedor</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">Registro como Proveedor <span class="tag">agente</span></div>
+    <div id="meta" class="meta"></div>
+  </header>
+
+  <main id="login" class="card login hidden">
+    <h1>Ingresar</h1>
+    <p class="muted">El acceso es por usuario: cada sesión de chat y cada caso pertenecen a quien los inicia.</p>
+    <form id="loginForm">
+      <label>Correo <input id="email" type="email" autocomplete="username" required /></label>
+      <label>Clave <input id="password" type="password" autocomplete="current-password" required /></label>
+      <button type="submit">Entrar</button>
+      <p id="loginError" class="error"></p>
+    </form>
+  </main>
+
+  <main id="app" class="layout hidden">
+    <section class="chat card">
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <div id="thinking" class="thinking hidden">El agente está pensando…</div>
+      <form id="chatForm" class="composer">
+        <textarea id="input" rows="2" placeholder='Ej.: Procesa el caso "ec-corp-andina". No envíes nada todavía.' required></textarea>
+        <button type="submit" id="send">Enviar</button>
+      </form>
+      <div id="examples" class="examples"></div>
+    </section>
+    <aside class="side">
+      <div class="card">
+        <h2>Sesión</h2>
+        <p class="muted small" id="sessionInfo"></p>
+        <button id="newSession" class="secondary">Nueva sesión</button>
+        <button id="logout" class="secondary">Salir</button>
+      </div>
+      <div class="card">
+        <h2>Alertas</h2>
+        <ul id="alerts" class="alerts"></ul>
+      </div>
+    </aside>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
