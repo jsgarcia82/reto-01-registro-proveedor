@@ -18,8 +18,23 @@ function el(tag, cls, text) {
 }
 function scroll() { $("messages").scrollTop = $("messages").scrollHeight }
 
+// Markdown mínimo y seguro para respuestas del modelo: primero se escapa TODO el HTML, luego solo se insertan etiquetas fijas.
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c])
+}
+function md(text) {
+  return escapeHtml(text)
+    .replace(/^#{1,4} (.+)$/gm, "<strong>$1</strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/^[-*] /gm, "• ")
+}
+
 function addMsg(role, text, extra = "") {
-  $("messages").appendChild(el("div", `msg ${role} ${extra}`, text))
+  const div = el("div", `msg ${role} ${extra}`)
+  if (role === "assistant") div.innerHTML = md(text)
+  else div.textContent = text
+  $("messages").appendChild(div)
   scroll()
 }
 
