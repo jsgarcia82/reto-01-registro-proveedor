@@ -98,7 +98,7 @@ Un cambio de reglas de negocio toca `src/domain` o `src/knowledge`, nunca `serve
 | HU-5 Errores | Hecho | `funcional.test.ts`, e2e | Observabilidad (métricas y trazas) |
 | Front con herramientas visibles y confirmación resaltada | Hecho | `web/` | Streaming; accesibilidad revisada |
 | Link público | **Pendiente** | `render.yaml` | Desplegar con la cuenta del candidato |
-| Bonus `modulo/` | No hecho | — | Empaquetar prompt, herramientas y skill |
+| Bonus `modulo/` | Hecho | `tests/modulo.test.ts` (mismas piezas, sin divergencia) | Publicar como paquete npm versionado |
 
 ## 9. Uso de IA
 
@@ -127,6 +127,6 @@ Un cambio de reglas de negocio toca `src/domain` o `src/knowledge`, nunca `serve
 | Plantillas reales peores que los fixtures | Validación previa de etiquetas (aborta si no coincide); alerta; corpus de plantillas por cliente con pruebas de regresión |
 | Maestro desactualizado | Dueño del dato; versión y fecha del maestro en el hash del paquete |
 | Soportes vencidos no detectados | Fecha de referencia explícita en checklist y envío; alerta por bloqueo |
-| Abuso del link o costos | Login, topes de tokens e iteraciones, timeout; añadir rate limiting y límite de intentos de login |
+| Abuso del link o costos | Login, límite de tasa por IP (10/min en login), topes de tokens e iteraciones, timeout; en multi-réplica, mover el límite de tasa a Redis |
 | Concurrencia multi-réplica | CAS, UNIQUE y lease ya están en la BD; `out/` debería migrar a almacenamiento de objetos con versionado |
 | Auditoría y cumplimiento (EU AI Act / NIST AI RMF) | `audit_log` y JSONL; política de retención de logs; revisión periódica de alertas; registro del modelo y versión usados |

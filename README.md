@@ -8,7 +8,7 @@ Agente en TypeScript que lee la solicitud del cliente, cruza los campos con el r
 |---|---|
 | **Link de prueba** | _pendiente de despliegue (ver "Despliegue")_ |
 | **Acceso al link** | Usuario y clave se entregan en la defensa (variable `DEMO_USERS` del servidor; no se publican en el repo). |
-| **Pruebas** | `npm test`: 55 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
+| **Pruebas** | `npm test`: 59 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
 | **CI** | GitHub Actions: PGlite (sin Docker ni clave) + Postgres 16 real |
 
 ## Arranque rápido
@@ -18,7 +18,7 @@ Requisitos: Node 20+ (o Docker).
 ```bash
 npm ci
 npm run demo     # ejecuta las herramientas sobre los 4 casos SIN modelo (demo.ts)
-npm test         # 55 pruebas, sin clave de API
+npm test         # 59 pruebas, sin clave de API
 npm run dev      # front + API en http://localhost:3000 (LLM simulado si no hay clave)
 ```
 
@@ -79,6 +79,7 @@ fixtures/ (solo lectura)   + CHECKSUMS.sha256        out/ (generado)
 | Método | Ruta | Descripción |
 |---|---|---|
 | `GET` | `/api/health` | `{ ok, provider, model }` (público, sin claves) |
+| — | (todas) | Límite de tasa por IP: 120/min global, 10/min en login |
 | `POST` | `/api/login` · `/api/logout` | Sesión por cookie httpOnly, SameSite=Strict |
 | `GET` | `/api/me` | Usuario, casos, fecha de referencia |
 | `POST` | `/api/sessions` | Nueva sesión de chat (propia) |
@@ -130,8 +131,18 @@ Principios tomados de los materiales de referencia: *Gobernanza y Compliance de 
 ## Lo no cubierto
 
 - Despliegue público: requiere la cuenta de quien entrega (`render.yaml` listo; ver abajo).
-- Bonus `modulo/` (+10): no entregado por priorización de controles y pruebas.
-- Streaming de respuestas (opcional en el PRD) y límite de intentos de login.
+- Streaming de respuestas (opcional en el PRD).
+- PDF de cliente sin AcroForm (se rellenaría por coordenadas); hoy se exige AcroForm o se deriva la plantilla.
+
+## Bonus: módulo reutilizable (`modulo/`)
+
+| Pieza | Origen (sin copias divergentes) |
+|---|---|
+| `modulo/agent.md` | frontmatter (`mode: primary`, `permission: {edit: deny, bash: deny}`) + `agent/prompt.md` |
+| `modulo/tools/proveedor.ts` | re-export de `src/tools/proveedor.ts` + `crearContextoLocal()` para usarlas sin servidor |
+| `modulo/skill/registro-proveedor/SKILL.md` | frontmatter + `src/knowledge/registro-proveedor.md` |
+
+Se regenera con `npx tsx scripts/build-modulo.ts`; `tests/modulo.test.ts` falla si divergen.
 
 ## Despliegue
 
@@ -141,5 +152,5 @@ Principios tomados de los materiales de referencia: *Gobernanza y Compliance de 
 
 ```
 agent/prompt.md · src/{server.ts, agent/, llm/, tools/, services/, domain/, docs/, db/, knowledge/}
-web/ · tests/ · demo.ts · fixtures/ (no modificar) · docs/ADR-001.md · SOLUCION.md · SELF_AUDIT.md
+web/ · tests/ · demo.ts · modulo/ · fixtures/ (no modificar) · docs/ADR-001.md · SOLUCION.md · SELF_AUDIT.md
 ```
