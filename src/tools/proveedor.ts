@@ -12,7 +12,7 @@ import { copyAtomic, hashDirectorio, resetDir, writeAtomic } from "../docs/files
 import { cargarPlantillaPdf, rellenarPdf } from "../docs/pdf.js"
 import { cargarPlantillaXlsx, rellenarXlsx, xlsxBuffer } from "../docs/xlsx.js"
 import { registrarAlerta, registrarAuditoria } from "../services/audit.js"
-import { hashPayload, solicitarConfirmacion, type PayloadPaquete } from "../services/confirmations.js"
+import { hashPayload, MSG_PAQUETE_AUSENTE, solicitarConfirmacion, type PayloadPaquete } from "../services/confirmations.js"
 import type { ToolContext } from "../services/context.js"
 import { asegurarRun, obtenerRunPropio, transicionar, type Run } from "../services/runs.js"
 
@@ -253,15 +253,17 @@ export const armar_paquete = definir({
     const asOf = s.clock.today()
     const ev = evaluarSoportes(k.soportesExigidos, indice, asOf)
     const mapeo = (run.mapping as CampoMapeado[] | null) ?? []
-    const formulario = run.formulario as { archivo: string } | null
+    const dirCaso = join(s.paths.out, a.caso)
+    const registrado = run.formulario as { archivo: string } | null
+    // Si el archivo se perdió (disco efímero), se trata como no generado en vez de fallar con un error interno.
+    const formulario = registrado && existsSync(join(dirCaso, registrado.archivo)) ? registrado : null
     const bloqueos = [...ev.bloqueos]
-    if (!formulario) bloqueos.push("Formulario no generado")
+    if (!formulario) bloqueos.push(registrado ? "Formulario no disponible en el servidor; vuelve a generarlo" : "Formulario no generado")
     const listo = bloqueos.length === 0
     const faltantes = mapeo.filter((c) => c.estado === "faltante")
     const porConfirmar = mapeo.filter((c) => c.estado === "requiere_confirmacion")
 
     // Se arma en un directorio temporal y se publica con rename dentro de la transacción.
-    const dirCaso = join(s.paths.out, a.caso)
     const staging = join(dirCaso, `.paquete-${randomUUID()}`)
     await resetDir(staging)
     try {
@@ -358,6 +360,7 @@ export const simular_envio = definir({
     }
     if (run.state !== "paquete_armado" && run.state !== "confirmacion_pendiente") return fail("El paquete no está armado; ejecuta proveedor_armar_paquete antes de proponer un envío.")
     if (!a.confirmado) return fail("requiere confirmación explícita")
+    if (!existsSync(join(s.paths.out, a.caso, "paquete"))) return fail(MSG_PAQUETE_AUSENTE)
     const pend = await solicitarConfirmacion(s, { run, userId: ctx.userId, sessionId: ctx.sessionId })
     ctx.onConfirmationRequired?.(pend)
     return failCon("requiere confirmación explícita", {

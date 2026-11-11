@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto"
+import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { DomainError, hashCanonical, sha256 } from "../domain/core.js"
 import { hashDirectorio, writeAtomic } from "../docs/files.js"
@@ -15,6 +16,9 @@ export interface PayloadPaquete {
 }
 
 export const hashPayload = (p: PayloadPaquete): string => hashCanonical(p)
+
+/** Disco efímero (p. ej. Render Free tras dormirse): los archivos pueden desaparecer aunque la BD conserve el estado. */
+export const MSG_PAQUETE_AUSENTE = "Los archivos del paquete ya no están en el servidor (por ejemplo, tras un reinicio). Vuelve a procesar el caso antes de enviar."
 
 /**
  * HITL: emite un token de un solo uso ligado a (run, versión, payload_hash, usuario, sesión, expiración).
@@ -95,7 +99,9 @@ export async function confirmarEnvio(s: Services, p: { token: string; userId: st
       if (run.payload_hash !== conf.payload_hash) throw new DomainError("Confirmación rechazada: el contenido del paquete cambió (hash distinto).", "hash_distinto")
 
       const payload = run.payload as PayloadPaquete
-      const enDisco = await hashDirectorio(join(s.paths.out, run.caso, "paquete"))
+      const dirPaquete = join(s.paths.out, run.caso, "paquete")
+      if (!existsSync(dirPaquete)) throw new DomainError(MSG_PAQUETE_AUSENTE, "paquete_ausente")
+      const enDisco = await hashDirectorio(dirPaquete)
       if (hashPayload({ ...payload, archivos: enDisco }) !== conf.payload_hash)
         throw new DomainError("Confirmación rechazada: los archivos del paquete en disco no coinciden con lo que se confirmó.", "hash_distinto")
 

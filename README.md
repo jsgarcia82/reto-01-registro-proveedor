@@ -10,7 +10,7 @@ Agente en TypeScript que lee la solicitud del cliente, cruza los campos con el r
 |---|---|
 | **Link de prueba** | _pendiente de despliegue (ver "Despliegue")_ |
 | **Acceso al link** | Usuario y clave se entregan en la defensa (variable `DEMO_USERS` del servidor; no se publican en el repo). |
-| **Pruebas** | `npm test`: 59 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
+| **Pruebas** | `npm test`: 61 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
 | **CI** | GitHub Actions: PGlite (sin Docker ni clave) + Postgres 16 real |
 
 ## Arranque rápido
@@ -20,7 +20,7 @@ Requisitos: Node 20+ (o Docker).
 ```bash
 npm ci
 npm run demo     # ejecuta las herramientas sobre los 4 casos SIN modelo (demo.ts)
-npm test         # 59 pruebas, sin clave de API
+npm test         # 61 pruebas, sin clave de API
 npm run dev      # front + API en http://localhost:3000 (LLM simulado si no hay clave)
 ```
 

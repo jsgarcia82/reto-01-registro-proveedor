@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs"
-import { readFile, writeFile } from "node:fs/promises"
+import { readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { evaluarSoportes } from "../src/domain/checklist.js"
 import { cargarIndiceSoportes, verificarChecksums } from "../src/domain/fixtures.js"
+import { confirmarEnvio } from "../src/services/confirmations.js"
 import { herramientas } from "../src/tools/proveedor.js"
-import { copiaFixtures, entorno, type Entorno, FIXTURES, procesar, ROOT, tool } from "./helpers.js"
+import { copiaFixtures, entorno, type Entorno, FIXTURES, pedirConfirmacion, procesar, ROOT, tool } from "./helpers.js"
 
 const etq = (xs: Array<{ etiqueta: string }>) => xs.map((x) => x.etiqueta)
 
@@ -163,5 +164,34 @@ describe("Fixtures de solo lectura", () => {
     for (const caso of ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"]) await procesar(caso, e.ctx(e.a.id, e.sesionA))
     await e.limpiar()
     expect(await verificarChecksums(join(ROOT, "fixtures"))).toEqual([])
+  })
+})
+
+describe("Disco efímero (Render Free): la BD conserva el estado pero out/ se borra", () => {
+  let e: Entorno
+  afterEach(() => e.limpiar())
+  const caso = "ec-corp-andina"
+
+  it("confirmar tras perder los archivos → mensaje claro (no error interno) y nada enviado", async () => {
+    e = await entorno({ asOf: "2026-08-27" })
+    await procesar(caso, e.ctx(e.a.id, e.sesionA))
+    const p = await pedirConfirmacion(caso, e, e.a.id, e.sesionA)
+    await rm(e.paths.out, { recursive: true, force: true })
+    await expect(confirmarEnvio(e.services, { token: p.token, userId: e.a.id, userEmail: e.a.email })).rejects.toThrow(/ya no están en el servidor/)
+    expect((await e.db.query("SELECT id FROM envios")).rows).toHaveLength(0)
+  })
+
+  it("pedir envío o rearmar sin archivos → mensaje claro; reprocesar el caso lo recupera", async () => {
+    e = await entorno({ asOf: "2026-08-27" })
+    await procesar(caso, e.ctx(e.a.id, e.sesionA))
+    await rm(e.paths.out, { recursive: true, force: true })
+    const envio = await tool("simular_envio", { caso, confirmado: true }, e.ctx(e.a.id, e.sesionA))
+    expect(envio.error).toMatch(/ya no están en el servidor/)
+    const paq = await tool("armar_paquete", { caso }, e.ctx(e.a.id, e.sesionA))
+    expect(paq.ok).toBe(true)
+    expect(paq.data.bloqueos).toContain("Formulario no disponible en el servidor; vuelve a generarlo")
+    const again = await procesar(caso, e.ctx(e.a.id, e.sesionA))
+    expect(again.gen.ok).toBe(true)
+    expect(again.paq.data.bloqueos).not.toContain("Formulario no disponible en el servidor; vuelve a generarlo")
   })
 })
