@@ -1,5 +1,7 @@
 # Reto 01 · Agente conversacional "Registro como Proveedor"
 
+[![CI](https://github.com/jsgarcia82/reto-01-registro-proveedor/actions/workflows/ci.yml/badge.svg)](https://github.com/jsgarcia82/reto-01-registro-proveedor/actions/workflows/ci.yml)
+
 Agente en TypeScript que lee la solicitud del cliente, cruza los campos con el repositorio maestro, **rellena la plantilla** (xlsx/pdf) o prepara los valores del portal, arma el paquete para firma y **solo simula el envío tras una confirmación humana ligada al hash del paquete, su versión y la identidad de quien confirma**.
 
 > Planteamiento completo, decisiones, costos y riesgos: [`SOLUCION.md`](SOLUCION.md) · Decisión de arquitectura: [`docs/ADR-001.md`](docs/ADR-001.md) · Autoauditoría: [`SELF_AUDIT.md`](SELF_AUDIT.md)
