@@ -166,3 +166,23 @@ describe("Seguridad — límite de intentos de login", () => {
     await e.limpiar()
   })
 })
+
+describe("Seguridad — límite de tasa detrás de un proxy (Render)", () => {
+  it("con TRUST_PROXY cuenta por IP real del cliente y no bloquea a otros usuarios; health nunca se limita", async () => {
+    const e = await entorno()
+    const { app } = await construirApp({ directory: ROOT, config: loadConfig({ LLM_PROVIDER: "mock", TRUST_PROXY: "true" }), db: e.db, clock: e.clock, paths: { fixtures: FIXTURES, out: e.paths.out } })
+    const login = (ip: string) => app.inject({ method: "POST", url: "/api/login", payload: { email: "x@y.zz", password: "mala" }, headers: { "x-forwarded-for": ip } })
+    for (let i = 0; i < 11; i++) await login("203.0.113.7")
+    expect((await login("203.0.113.7")).statusCode).toBe(429) // el atacante queda bloqueado
+    expect((await login("198.51.100.20")).statusCode).toBe(401) // otro usuario no
+    for (let i = 0; i < 130; i++) expect((await app.inject({ method: "GET", url: "/api/health" })).statusCode).toBe(200)
+    await app.close()
+    await e.limpiar()
+  })
+
+  it("en Render se activa sola (RENDER=true); en local no se confía en X-Forwarded-For", () => {
+    expect(loadConfig({ RENDER: "true" }).trustProxy).toBe(true)
+    expect(loadConfig({}).trustProxy).toBe(false)
+    expect(loadConfig({ RENDER: "true", TRUST_PROXY: "false" }).trustProxy).toBe(false)
+  })
+})

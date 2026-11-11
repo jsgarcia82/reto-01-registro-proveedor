@@ -12,6 +12,8 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   DEMO_USERS: z.string().min(1).optional(),
   COOKIE_SECURE: z.enum(["true", "false"]).default("false"),
+  TRUST_PROXY: z.enum(["true", "false"]).optional(),
+  RENDER: z.string().optional(),
   AS_OF_DATE: isoDate.optional(),
   BUSINESS_TIMEZONE: z
     .string()
@@ -38,6 +40,8 @@ export type AppConfig = {
   databaseUrl: string | undefined
   demoUsers: string | undefined
   cookieSecure: boolean
+  /** Detrás de un proxy (Render): req.ip = cliente real según X-Forwarded-For. */
+  trustProxy: boolean
   asOfDate: string | undefined
   businessTimezone: string
   confirmationTtlSeconds: number
@@ -59,6 +63,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     databaseUrl: e.DATABASE_URL,
     demoUsers: e.DEMO_USERS,
     cookieSecure: e.COOKIE_SECURE === "true",
+    // Render define RENDER=true en sus servicios; fuera de un proxy confiable no se acepta X-Forwarded-For.
+    trustProxy: e.TRUST_PROXY ? e.TRUST_PROXY === "true" : e.RENDER === "true",
     asOfDate: e.AS_OF_DATE,
     businessTimezone: e.BUSINESS_TIMEZONE,
     confirmationTtlSeconds: e.CONFIRMATION_TTL_SECONDS,

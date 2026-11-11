@@ -60,7 +60,7 @@ export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstanc
   const llm = new PrivacyGuardAdapter(base, valoresSensibles(await cargarMaestro(paths)))
   const deps: AgentDeps = { services, llm, directory: o.directory, maxIterations: o.config.maxIterationsPerTurn, maxTokensPerSession: o.config.maxTokensPerSession }
 
-  const app = Fastify({ logger: o.logger ?? false, bodyLimit: 64 * 1024 })
+  const app = Fastify({ logger: o.logger ?? false, bodyLimit: 64 * 1024, trustProxy: o.config.trustProxy })
   await app.register(cookie)
   // Límite de tasa por IP (protege la clave del LLM y el login frente a fuerza bruta).
   await app.register(rateLimit, { global: true, max: 120, timeWindow: "1 minute" })
@@ -86,7 +86,8 @@ export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstanc
     return req.usuario
   }
 
-  app.get("/api/health", async () => ({ ok: true, provider: llm.provider, model: llm.model }))
+  // Sin límite de tasa: lo consulta el health check de la plataforma cada pocos segundos.
+  app.get("/api/health", { config: { rateLimit: false } }, async () => ({ ok: true, provider: llm.provider, model: llm.model }))
 
   app.post("/api/login", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }, async (req, reply) => {
     const b = LoginBody.safeParse(req.body)

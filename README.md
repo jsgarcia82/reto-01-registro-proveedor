@@ -10,7 +10,7 @@ Agente en TypeScript que lee la solicitud del cliente, cruza los campos con el r
 |---|---|
 | **Link de prueba** | **https://reto01-registro-proveedor-jwpo.onrender.com** (Render Free: si estuvo inactivo 15 min, la primera carga tarda ~1 min) |
 | **Acceso al link** | Usuario y clave se entregan en la defensa (variable `DEMO_USERS` del servidor; no se publican en el repo). |
-| **Pruebas** | `npm test`: 62 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
+| **Pruebas** | `npm test`: 64 pruebas, sin clave de API, incluidas `anti_error_1_1` … `anti_error_1_6` |
 | **CI** | GitHub Actions: PGlite (sin Docker ni clave) + Postgres 16 real |
 
 ## Arranque rápido
@@ -20,7 +20,7 @@ Requisitos: Node 20+ (o Docker).
 ```bash
 npm ci
 npm run demo     # ejecuta las herramientas sobre los 4 casos SIN modelo (demo.ts)
-npm test         # 62 pruebas, sin clave de API
+npm test         # 64 pruebas, sin clave de API
 npm run dev      # front + API en http://localhost:3000 (LLM simulado si no hay clave)
 ```
 
@@ -57,6 +57,7 @@ Con el modelo real: copia `.env.example` a `.env` y define `ANTHROPIC_API_KEY` (
 | `BUSINESS_TIMEZONE` | Zona horaria para calcular "hoy" | `America/Bogota` |
 | `CONFIRMATION_TTL_SECONDS` | Vida del token de confirmación | `600` |
 | `COOKIE_SECURE` | `true` detrás de HTTPS | `false` |
+| `TRUST_PROXY` | Usar la IP real del cliente (`X-Forwarded-For`) detrás de un proxy | `true` en Render, `false` en local |
 
 ## Arquitectura
 
@@ -82,7 +83,7 @@ fixtures/ (solo lectura)   + CHECKSUMS.sha256        out/ (generado)
 | Método | Ruta | Descripción |
 |---|---|---|
 | `GET` | `/api/health` | `{ ok, provider, model }` (público, sin claves) |
-| — | (todas) | Límite de tasa por IP: 120/min global, 10/min en login |
+| — | (todas) | Límite de tasa por IP real del cliente: 120/min global, 10/min en login (health excluido) |
 | `POST` | `/api/login` · `/api/logout` | Sesión por cookie httpOnly, SameSite=Strict |
 | `GET` | `/api/me` | Usuario, casos, fecha de referencia |
 | `POST` | `/api/sessions` | Nueva sesión de chat (propia) |
