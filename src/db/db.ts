@@ -102,12 +102,17 @@ export async function createDb(opts: DbOptions = {}): Promise<Db> {
       await admin.end()
     }
     const db = createPostgres(opts.url, opts.schema)
-    await db.query(SCHEMA_SQL)
+    await migrar(db)
     return db
   }
   const db = await createPglite(opts.dataDir)
+  await migrar(db)
+  return db
+}
+
+/** Migración idempotente, sentencia a sentencia, en una transacción. */
+async function migrar(db: Db): Promise<void> {
   await db.tx(async (q) => {
     for (const stmt of SCHEMA_SQL.split(";").map((s) => s.trim()).filter(Boolean)) await q.query(stmt)
   })
-  return db
 }
