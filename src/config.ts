@@ -13,6 +13,17 @@ const EnvSchema = z.object({
   DEMO_USERS: z.string().min(1).optional(),
   COOKIE_SECURE: z.enum(["true", "false"]).default("false"),
   AS_OF_DATE: isoDate.optional(),
+  BUSINESS_TIMEZONE: z
+    .string()
+    .default("America/Bogota")
+    .refine((tz) => {
+      try {
+        new Intl.DateTimeFormat("en-CA", { timeZone: tz })
+        return true
+      } catch {
+        return false
+      }
+    }, "zona horaria IANA inválida"),
   CONFIRMATION_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(600),
   PORT: z.coerce.number().int().positive().default(3000),
 })
@@ -28,6 +39,7 @@ export type AppConfig = {
   demoUsers: string | undefined
   cookieSecure: boolean
   asOfDate: string | undefined
+  businessTimezone: string
   confirmationTtlSeconds: number
   port: number
 }
@@ -48,6 +60,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     demoUsers: e.DEMO_USERS,
     cookieSecure: e.COOKIE_SECURE === "true",
     asOfDate: e.AS_OF_DATE,
+    businessTimezone: e.BUSINESS_TIMEZONE,
     confirmationTtlSeconds: e.CONFIRMATION_TTL_SECONDS,
     port: e.PORT,
   }

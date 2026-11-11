@@ -55,7 +55,7 @@ export async function crearLlm(config: AppConfig, casos: string[]): Promise<LlmA
 
 export async function construirApp(o: AppOptions): Promise<{ app: FastifyInstance; services: Services; deps: AgentDeps }> {
   const paths: Paths = o.paths ?? { fixtures: join(o.directory, "fixtures", "reto-01"), out: join(o.directory, "out") }
-  const services: Services = { db: o.db, clock: o.clock ?? systemClock(o.config.asOfDate), paths, config: { confirmationTtlSeconds: o.config.confirmationTtlSeconds } }
+  const services: Services = { db: o.db, clock: o.clock ?? systemClock(o.config.asOfDate, o.config.businessTimezone), paths, config: { confirmationTtlSeconds: o.config.confirmationTtlSeconds } }
   const base = o.llm ?? (await crearLlm(o.config, await listarCasos(paths)))
   const llm = new PrivacyGuardAdapter(base, valoresSensibles(await cargarMaestro(paths)))
   const deps: AgentDeps = { services, llm, directory: o.directory, maxIterations: o.config.maxIterationsPerTurn, maxTokensPerSession: o.config.maxTokensPerSession }

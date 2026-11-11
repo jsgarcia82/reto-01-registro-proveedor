@@ -2,6 +2,8 @@ import { existsSync } from "node:fs"
 import { readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { evaluarSoportes } from "../src/domain/checklist.js"
+import { loadConfig } from "../src/config.js"
+import { fechaEnZona } from "../src/domain/core.js"
 import { cargarIndiceSoportes, verificarChecksums } from "../src/domain/fixtures.js"
 import { confirmarEnvio } from "../src/services/confirmations.js"
 import { herramientas } from "../src/tools/proveedor.js"
@@ -97,6 +99,14 @@ describe("HU-4 / RN3 — paquete y vigencias", () => {
 })
 
 describe("RN3 — regla de vencimiento", () => {
+  it("'hoy' se calcula en la zona del negocio, no en UTC (7 pm en Bogotá sigue siendo el mismo día)", () => {
+    const utcYaEsManana = new Date("2026-11-11T01:46:00Z")
+    expect(fechaEnZona(utcYaEsManana, "America/Bogota")).toBe("2026-11-10")
+    expect(fechaEnZona(utcYaEsManana, "UTC")).toBe("2026-11-11")
+    expect(loadConfig({}).businessTimezone).toBe("America/Bogota")
+    expect(() => loadConfig({ BUSINESS_TIMEZONE: "Marte/Olympus" })).toThrow()
+  })
+
   it("vigencia: el último día de vigencia todavía es válido", async () => {
     const indice = await cargarIndiceSoportes({ fixtures: FIXTURES, out: "" })
     expect(evaluarSoportes(["parafiscales"], indice, "2026-08-31").items[0]?.estado).toBe("presente")

@@ -23,10 +23,15 @@ export interface Clock {
   today(): string
 }
 
-export function systemClock(asOfDate?: string): Clock {
+/** Fecha calendario (YYYY-MM-DD) en una zona horaria IANA; evita que a las 7 pm de Bogotá "hoy" ya sea mañana en UTC. */
+export function fechaEnZona(d: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d)
+}
+
+export function systemClock(asOfDate?: string, timeZone = "America/Bogota"): Clock {
   return {
     now: () => new Date(),
-    today: () => asOfDate ?? new Date().toISOString().slice(0, 10),
+    today: () => asOfDate ?? fechaEnZona(new Date(), timeZone),
   }
 }
 
